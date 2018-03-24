@@ -1,0 +1,42 @@
+(function executeRule(current, previous /*null when async*/) {
+
+// Get Account ID and set value
+    var accID = current.company;
+    gs.info(gr.getElement(accID));
+
+
+// Get Total Count of Active Risks base on Account ID
+//Number of incidents varies depending on the current state
+//of the incident table
+
+    var count = new GlideAggregate('x_rebhr_acct_mgmt_account_risk');
+    count.addQuery('active','true');
+    count.addQuery('Company',accID);
+    count.addAggregate('COUNT');
+    count.query();
+
+    var risksCounts =0;
+    if(count.next())
+        risksCounts = count.getAggregate('COUNT');
+
+// Update Account Risks Total
+
+
+    // Example update Table use to update Company ID
+    var updCompany = new GlideRecord("Company");
+    //  updCompany.addQuery("Company", accID);
+    //  updCompany.query();
+    updCompany.get(accID);
+    updCompany.setValue("u_risk_totals", "45");
+
+
+
+//	var gr = new GlideRecord('company');
+//gr.get(accID);
+//gr.current.company.u_risk_totals = risksCounts;
+
+    updCompany.update();
+    gs.info(gr.getElement('Risk Totals ASDFASDF '));
+
+
+})(current, previous);

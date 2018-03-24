@@ -1,0 +1,64 @@
+
+
+OneExchange 1/1/17 - 12/31/17 Year
+
+/*
+ Runs in background script or create a job to run as "admin" so your user name is not tied to all the updates. lol
+ Pre condition: New Knowledge Base record is created and has categories created to line up with existing topic and category structure.
+ Script to automatically move legacy Knowledge Articles to the new Knowledge base record for KM v3
+ oldKB = sys_id of the legacy knowledge base
+ newKB = sys_id of new knowledge base (KMv3)record
+ */
+// sys_ids of the old and new KB's
+var oldKB = '<insert sys_id>';  //default(legacy) KB
+var newKB = '1d386a6a6f356e005ccf0ee9ea3ee47f';
+
+var kb = new GlideRecord('kb_knowledge');
+kb.addQuery('kb_knowledge_base', newKB)
+
+kb.query();
+var counter = kb.getRowCount(); //first run I do is with update comment out so I can make sure my count lines up
+
+
+
+
+
+
+
+
+
+var kb = new GlideRecord('kb_knowledge');
+kb.addQuery('kb_knowledge_base', oldKB)
+kb.query();
+var counter = kb.getRowCount(); //first run I do is with update comment out so I can make sure my count lines up
+var cat = ''; //define the category value (below we will determine if cat is top or low level)
+while (kb.next()) {
+    //loop thought KA's to see if record has topic "top level"
+    var gr = new GlideRecord('kb_category');
+    gr.addQuery('parent_id', newKB); //Finding the new KB record
+    gr.addQuery('value', kb.topic)
+    gr.query();
+    while (gr.next()) {
+
+
+        //loop thought KA's to see if record has category "low level"
+        var pd = new GlideRecord('kb_category');
+        pd.addQuery('parent_id.parent_table', 'kb_category');
+        pd.addQuery('parent_id', gr.sys_id); //passing in the
+        pd.addQuery('value', kb.category);
+        pd.query();
+        if (pd.next()) {
+            gs.info('**** KB == ' + kb.number + ' Low Level  == ' + pd.label)
+            cat = pd.sys_id;
+        } else {
+            gs.info('**** KB == ' + kb.number + ' Top level == ' + gr.label);
+            cat = gr.sys_id;
+        }
+    }
+    gs.info('KB == ' + kb.number + ' // Parent id == ' + gr.parent_id + ' // Topic(' + kb.topic + ') == ' + gr.value + ' // Category(' + kb.category + ') == ' + pd.value);
+    kb.kb_knowledge_base = newKB; //set new KB
+    kb.kb_category = cat; //set top or low level category
+    kb.setWorkflow(false); //Option, if you don't want any jobs to run after update then leave false
+    kb.update();
+}
+gs.info(counter);
