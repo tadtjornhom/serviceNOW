@@ -1,0 +1,69 @@
+(function executeRule(current, previous /*null when async*/) {
+
+	
+	
+	// get total cost from all Risk Events
+	var sum;
+	var count = new GlideAggregate('x_rebhr_acct_mgmt_account_risk');
+	count.addAggregate('active','true');
+	count.addAggregate('SUM', 'risk_value');
+ //	count.addAggregate('sys_id',current.company.sys_id );
+	count.addQuery('company.sys_id','=',current.company.sys_id);
+	count.setGroup(false);
+	count.query();
+	while (count.next()) {
+		sum = count.getAggregate('SUM', 'risk_value');	
+	}
+		var hsr = new GlideRecord('customer_account');
+		hsr.addQuery('sys_id',current.company.sys_id );
+		hsr.query();
+		if(hsr.next()){
+		//	gs.addInfoMessage(sum);
+				// moved this calulcation to Account Screen Business Rule - Per Dawn changing the calcualtion amounts 
+			  
+			totalHealth = 100 - sum;
+			AcctStatus = updateCalRiskStatus(totalHealth);
+			hsr.u_risk_status_calculated = AcctStatus;
+			hsr.u_risk_totals = sum;
+			hsr.u_account_health_status = totalHealth;
+			hsr.update();
+		}
+		
+ gs.addInfoMessage(current.company.name + ' calculated risk total is ' + sum + ' | ' + totalHealth +' | '+ AcctStatus);		
+	
+})(current, previous);
+
+function updateCalRiskStatus(riskTotal){
+	
+
+//	gs.addInfoMessage('In cal risk status');
+	
+// used to return text	
+	var riskStatus = '';
+	
+	gs.addInfoMessage('infunction| riskTotal = ' + riskTotal);
+	
+	if ( riskTotal > 90  ) {
+		riskStatus = 'No Issues';	
+			gs.addInfoMessage(riskStatus + ' |  No RISK');	
+       return riskStatus;
+		
+		}
+	
+	if ( riskTotal <= 84  ) {
+		 riskStatus = 'At Risk';	
+			gs.addInfoMessage(riskStatus + ' | ' + 'AT RISK');
+        return riskStatus;		
+	}
+	
+	
+ //	if (riskTotal >= numwatchlevel & riskTotal < numriskLevelX  ) {
+		riskStatus = 'On watch List';	
+			gs.addInfoMessage(riskStatus + ' | watchList');	
+        return riskStatus;
+		
+	//	}
+		
+	
+	
+}
