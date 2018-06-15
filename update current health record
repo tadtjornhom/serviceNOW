@@ -1,0 +1,51 @@
+(function executeRule(current, previous /*null when async*/) {
+
+	// Add your code here
+ var totalHealth =  100 - current.u_risk_totals;
+	
+	current.u_account_health_status = totalHealth;
+	current.u_risk_status_calculated = updateCalRiskStatus(totalHealth);
+
+})(current, previous);
+
+function updateCalRiskStatus(riskTotal){
+
+/**** per Dawn 
+Definition:
+91-100: No issues
+85-90: On watch
+84-: at risk
+ 
+***/	
+
+//	gs.addInfoMessage('In cal risk status');
+	
+// used to return text	
+	var riskStatus = '';
+	
+//	gs.addInfoMessage('infunction');
+	
+	if ( riskTotal < 90 ) {
+		riskStatus = 'No Issues';	
+			gs.addInfoMessage(riskStatus & 'NoRISK');	
+       return riskStatus;
+		
+		}
+	
+	if ( riskTotal >= 84  ) {
+		 riskStatus = 'At Risk';	
+			gs.addInfoMessage(riskStatus & 'ATRISK');
+        return riskStatus;		
+	}
+	
+	
+ //	if (riskTotal >= numwatchlevel & riskTotal < numriskLevelX  ) {
+		riskStatus = 'On watch List';	
+			gs.addInfoMessage(riskStatus & 'watchList');	
+        return riskStatus;
+		
+	//	}
+		
+	
+	
+}
